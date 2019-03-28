@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- render('head') %>
+<style>
+  body: {
+    height: auto;
+  }
+</style>
+<script>
+  // hack until PhantomJS supports setting media type
+  //   see: https://github.com/ariya/phantomjs/issues/10374
+  window.addEventListener('load', () => {
+    for (let i = 0; i < document.styleSheets.length; i += 1) {
+      const styleSheet = document.styleSheets[i]
+      if (typeof styleSheet === 'object') {
+        let rules
+        try {
+            rules = styleSheet.rules
+        } catch(e) {
+            // cannot read rules on some remote stylesheets
+            // console.log("caught", e, styleSheet)
+            continue
+        }
+        if (rules) {
+          Object.keys(rules).forEach((key) => {
+            const rule = rules[key]
+            if (rule.type === 4) { // CSSRule.MEDIA
+              let needsAll = false
+              for (let j = 0; j < rule.media.length; j += 1) {
+                const medium = rule.media[j]
+                if (medium === 'all') break
+                if (medium === 'print') {
+                  needsAll = true
+                  break
+                }
+              }
+              if (needsAll) rule.media.appendMedium('all')
+            }
+          })
+        }
+      }
+    }
+  })
+</script>
+<body>
+  <div class="content-wrapper">
+    <div class="row">
+      <div class="col-lg-12">
+      <%- content %>
+      <%- render('scripts') %>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
