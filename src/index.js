@@ -35,9 +35,7 @@ import puppeteer from 'puppeteer'
  *       for the page is formed by combining this host component with a
  *       protocol component and a root-relative path component.
  *
- * The renderer detects when it is being run in the Heroku environment
- * by examining the `application.config.node_env` setting. If this is
- * set to `production`, it configures itself for Heroku,
+ * By default, the puppeteer browser is configured to run without chrome sandboxing. Use appropriately.
  *
  *
  */
@@ -57,8 +55,11 @@ class Printer extends NxusModule {
    * *   `type` - rendered format, used as file type (default `pdf`); supports pdf, png, jpg/jpeg
    * *   `secure` - if true, use https
    * *   `width` and `height` will override the PDF/image rendering `format` (normally "Letter")
-   *  * other options are passed to the rendering
+   *  * other options are passed to the pdf rendering
+   * 
    * @returns {Promise} promise that resolves to the path to the rendered output
+   * 
+   * Launch options for puppeteer can be set in the application configuration `puppeteer` property.
    */
   async renderPage(relativeUrl, options={}) {
     let myOptions = Object.assign({type: 'pdf'}, options ),
@@ -74,14 +75,16 @@ class Printer extends NxusModule {
     let stamp = Date.now(),
         dstPath = path.resolve(__dirname, '../../.tmp/img', stamp+'.'+type),
         dirPath = path.dirname(dstPath)
-
-    let launchArgs = []
-    launchArgs = ['--no-sandbox', '--disable-setuid-sandbox']
+    
+    //All URL's are local to the app. Over-ride the chrome sandboxing.
+    let launchArgs = ['--no-sandbox', '--disable-setuid-sandbox']
     if ('jpg' == type) type = 'jpeg'
+    let browser
     try {
       await mkdirp(dirPath)
-      this.log.debug(`renderPage() web page '${shotUrl}' myOptions`, myOptions)
-      const browser = await puppeteer.launch({args: launchArgs});
+      let launchOpts = Object.assign({args: launchArgs}, this.config.puppeteer)
+      this.log.debug(`renderPage() web page '${shotUrl}' launchOpts `, launchOpts)
+      browser = await puppeteer.launch(launchOpts);
 
       const page = await browser.newPage();
       await page.goto(shotUrl, {waitUntil: 'networkidle0'});
@@ -110,6 +113,9 @@ class Printer extends NxusModule {
     } catch (err) {
       this.log.error(`renderPage url ${shotUrl} type ${type} `, err)
       throw new Error("print error", err)
+    } finally {
+      if (browser)
+        await browser.close();
     }
 
     return dstPath
