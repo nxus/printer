@@ -82,7 +82,7 @@ class Printer extends NxusModule {
     let browser
     try {
       await mkdirp(dirPath)
-      let launchOpts = Object.assign({args: launchArgs}, application.config.puppeteer)
+      let launchOpts = Object.assign({args: launchArgs}, this.config.puppeteer)
       this.log.debug(`renderPage() web page '${shotUrl}' launchOpts `, launchOpts)
       browser = await puppeteer.launch(launchOpts);
 
