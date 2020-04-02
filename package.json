@@ -8,9 +8,9 @@
     "postversion": "npm run build-docs && git push && git push --tags",
     "test": "jest --runInBand --forceExit",
     "compile": "rm -rf lib/; babel src --out-dir lib; cp -r src/layouts lib/",
-    "prepublish": "npm run compile",
+    "prepare": "npm run compile",
     "postpublish": "npm run build-docs && npm run publish-docs",
-    "build-docs": "NAME=\"${NAME:-$npm_package_name}\" VERSION=\"${VERSION:-$npm_package_version}\" && documentation readme ./src/index.js --readme-file ./README.md --project-name ${NAME} --project-version ${VERSION} --section ${NAME} --markdown-toc false",
+    "build-docs": "documentation readme ./src/index.js --readme-file ./README.md --project-name $npm_package_name --project-version $npm_package_version --section $npm_package_name --markdown-toc false",
     "publish-docs": "npm run build-docs && git add ./README.md && git commit -m 'Updated README API Docs' && git push"
   },
   "repository": {
