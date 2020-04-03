@@ -31,13 +31,12 @@ It also requires the following configuration variables:
       for the page is formed by combining this host component with a
       protocol component and a root-relative path component.
 
-The renderer detects when it is being run in the Heroku environment
-by examining the `application.config.node_env` setting. If this is
-set to `production`, it configures itself for Heroku,
+By default, the puppeteer browser is configured to run without chrome sandboxing. Use appropriately.
 
 ### renderPage
 
 Renders a printable version of a web page.
+Launch options for puppeteer can be set in the nxus configuration `printer.puppeteer` property.
 
 **Parameters**
 
@@ -46,7 +45,8 @@ Renders a printable version of a web page.
       protocol or host components)
 -   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** rendering options:-   `type` - rendered format, used as file type (default `pdf`); supports pdf, png, jpg/jpeg
     -   `secure` - if true, use https
+        `subdomain` - prepend the application config `baseUrl` with this sub-domain if set
     -   `width` and `height` will override the PDF/image rendering `format` (normally "Letter")
-    -   other options are passed to the rendering (optional, default `{}`)
+    -   other options are passed to the pdf rendering (optional, default `{}`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** promise that resolves to the path to the rendered output
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** promise that resolves to the path to the rendered output.
