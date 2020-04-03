@@ -48,30 +48,33 @@ class Printer extends NxusModule {
   }
 
   /** Renders a printable version of a web page.
+   * Launch options for puppeteer can be set in the nxus configuration `printer.puppeteer` property.
    * @param {string} relativeUrl - root-relative URL of the page to be
    *   rendered (the path and query string components, but not the
    *   protocol or host components)
    * @param {Object} options - rendering options:
    * *   `type` - rendered format, used as file type (default `pdf`); supports pdf, png, jpg/jpeg
    * *   `secure` - if true, use https
+   *     `subdomain` - prepend the application config `baseUrl` with this sub-domain if set
    * *   `width` and `height` will override the PDF/image rendering `format` (normally "Letter")
    *  * other options are passed to the pdf rendering
    * 
-   * @returns {Promise} promise that resolves to the path to the rendered output
-   * 
-   * Launch options for puppeteer can be set in the application configuration `puppeteer` property.
+   * @returns {Promise} promise that resolves to the path to the rendered output.
+  
    */
   async renderPage(relativeUrl, options={}) {
+    this.log.debug('params in: ', relativeUrl, options)
     let myOptions = Object.assign({type: 'pdf'}, options ),
       type = myOptions.type
 
     let urlObj = url.parse(relativeUrl, true)
     urlObj.protocol = myOptions.secure ? 'https:' : 'http:'
-    urlObj.host = application.config.baseUrl
+    urlObj.host = (myOptions.subdomain ? myOptions.subdomain+'.' : '') + application.config.baseUrl
     urlObj.query['print'] = 'true'
     delete myOptions.secure
+    delete myOptions.subdomain
     let shotUrl = url.format(urlObj)+"&print=true"
-
+    this.log.debug('options', myOptions)
     let stamp = Date.now(),
         dstPath = path.resolve(__dirname, '../../.tmp/img', stamp+'.'+type),
         dirPath = path.dirname(dstPath)
